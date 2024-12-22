@@ -11,7 +11,7 @@ import {
 } from "@/lib/fonts";
 
 // Favicon
-import Favicon from "@/public/assets/favicon/favicon.ico";
+import Favicon from "@/public/assets/favicon/bigcircle.ico";
 
 // Vercel Analytics
 import { Analytics } from "@vercel/analytics/react";
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         canonical: BASE_URL,
     },
     authors: {
-        name: "Ali Abbasov",
+        name: "Rahul Chauhan",
         url: "https://aliabb.vercel.app",
     },
     verification: {

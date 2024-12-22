@@ -5,8 +5,8 @@ import {
     CurrencySelector,
     DatePickerFormField,
     FormInput,
-    FormFile,
     Subheading,
+    FormFile,
     TemplateSelector,
 } from "@/app/components";
 
@@ -15,7 +15,7 @@ import { useTranslationContext } from "@/contexts/TranslationContext";
 
 const InvoiceDetails = () => {
     const { _t } = useTranslationContext();
-
+    
     return (
         <section className="flex flex-col flex-wrap gap-5">
             <Subheading>{_t("form.steps.invoiceDetails.heading")}:</Subheading>

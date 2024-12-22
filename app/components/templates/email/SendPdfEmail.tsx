@@ -21,7 +21,7 @@ type SendPdfEmailProps = {
 };
 
 export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
-    const logo = `${BASE_URL}/assets/img/invoify-logo.png`;
+    const logo = "https://www.bigcircle.tech/_next/image?url=%2Flogo.png&w=64&q=100";
     return (
         <Html>
             <Head />
@@ -35,8 +35,8 @@ export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
                             <Img
                                 src={logo}
                                 alt="Invoify Logo"
-                                width={200}
-                                height={120}
+                                width={70}
+                                height={70}
                             />
                             <Heading className="leading-tight">
                                 Thanks for using Invoify!
@@ -53,7 +53,7 @@ export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
                             <Text>
                                 Best Regards,
                                 <br />
-                                Invoify Team
+                                BigCircle Team
                             </Text>
                         </Section>
                     </Container>
