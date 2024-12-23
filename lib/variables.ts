@@ -109,13 +109,13 @@ export const SHORT_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
  */
 export const FORM_DEFAULT_VALUES = {
     sender: {
-        name: "",
-        address: "",
-        zipCode: "",
-        city: "",
-        country: "",
-        email: "",
-        phone: "",
+        name: "Tirth Gajjar",
+        address: "A-401,Orbit Mall,Kudasan",
+        zipCode: "382421",
+        city: "Gandhinagar",
+        country: "India",
+        email: "contact@tirth.dev",
+        phone: "8511455160",
         customInputs: [],
     },
     receiver: {
@@ -135,11 +135,25 @@ export const FORM_DEFAULT_VALUES = {
         dueDate: "",
         items: [
             {
-                name: "",
-                description: "",
-                quantity: 0,
-                unitPrice: 0,
-                total: 0,
+                name: "Product 1",
+                description: "Description of Product 1",
+                quantity: 4,
+                unitPrice: 50,
+                total: 200,
+            },
+            {
+                name: "Product 2",
+                description: "Description of Product 2",
+                quantity: 5,
+                unitPrice: 50,
+                total: 250,
+            },
+            {
+                name: "Product 3",
+                description: "Description of Product 3",
+                quantity: 5,
+                unitPrice: 80,
+                total: 400,
             },
         ],
         currency: "USD",
