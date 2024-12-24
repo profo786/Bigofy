@@ -15,7 +15,7 @@ import { DevDebug, LanguageSelector, ThemeSwitcher } from "@/app/components";
 
 const BaseNavbar = () => {
     const devEnv = useMemo(() => {
-        return process.env.NODE_ENV === "development";
+        return process.env.NODE_ENV === 'production';
     }, []);
 
     return (
