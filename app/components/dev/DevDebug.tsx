@@ -10,7 +10,7 @@ import { useFormContext } from "react-hook-form";
 import { BaseButton } from "@/app/components";
 
 // Variables
-import { FORM_FILL_VALUES } from "@/lib/variables";
+import { FORM_FILL_VALUES} from "@/lib/variables";
 
 type DevDebugProps = {};
 
@@ -22,6 +22,8 @@ const DevDebug = ({}: DevDebugProps) => {
     };
 
     return (
+
+        <>
         <div className="flex  items-center h-10 w-28   rounded-lg border bg-card text-card-foreground  dark:border-gray-600">
             <div className="flex flex-col ">
           
@@ -39,6 +41,20 @@ const DevDebug = ({}: DevDebugProps) => {
                 </select>
             </div>
         </div>
+     {/* <div>
+      <BaseButton
+      onClick={()=> reset(FORM_BIGCIRCLE)}      
+      >Big Circle
+      </BaseButton>
+     </div>
+     <div>
+      <BaseButton
+      onClick={()=> reset(FORM_PILOT)}      
+      >Pilot Sprint
+      </BaseButton>
+     </div> */}
+    
+        </>
     );
 };
 

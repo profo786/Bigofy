@@ -27,6 +27,7 @@ import {
     Items,
     PaymentInformation,
     InvoiceSummary,
+    BaseButton,
 } from "@/app/components";
 
 // Contexts
@@ -58,7 +59,7 @@ const InvoiceForm = () => {
                     <div className="flex gap-3">
                         <CardTitle className="flex items-center gap-3">
                             <span className="uppercase">
-                                {_t("form.title")}
+                                {_t("form.title")} 
                             </span>
                         </CardTitle>
                         <Badge variant="secondary" className="w-fit">
@@ -66,6 +67,8 @@ const InvoiceForm = () => {
                                 {invoiceNumberLabel}
                             </p>
                         </Badge>
+
+                        
                     </div>
                     <CardDescription>{_t("form.description")}</CardDescription>
                 </CardHeader>
@@ -103,5 +106,7 @@ const InvoiceForm = () => {
         </div>
     );
 };
+
+
 
 export default InvoiceForm;
