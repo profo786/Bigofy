@@ -18,22 +18,9 @@ const InvoiceTemplate = (data: InvoiceType) => {
   return (
     <InvoiceLayout data={data}>
       <div className="flex justify-between">
-        <div>
-          {details.invoiceLogo && (
-            <img
-              src={details.invoiceLogo}
-              width={80}
-              height={80}
-              alt={`Logo of ${sender.name}`}
-            />
-          )}
-          <h1 className="mt-2 text-lg md:text-xl font-semibold text-blue-600">
-            {sender.name}
-          </h1>
-        </div>
-        <div className="text-right">
+        <div className="text-left">
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
-            Invoice #
+            INVOICE
           </h2>
           <span className="mt-1 block text-gray-500">
             {details.invoiceNumber}
@@ -46,6 +33,27 @@ const InvoiceTemplate = (data: InvoiceType) => {
             {sender.country}
             <br />
           </address>
+        </div>
+
+        <div className="text-right">
+          {details.invoiceLogo && (
+            <img
+              className="mx-auto md:ml-auto md:mr-0"
+              src={details.invoiceLogo}
+              width={80}
+              height={80}
+              alt={`Logo of ${sender.name}`}
+            />
+          )}
+          <h1 className="mt-2 text-lg md:text-xl font-semibold text-blue-600">
+            {sender.name}
+          </h1>
+          <div className=" mt-1">
+            <p className=" text-sm">
+              <span className=" font-semibold">GST IN : </span>
+              <span className=" text-gray-600">{details.paymentInformation?.Gstin}</span>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -235,7 +243,6 @@ const InvoiceTemplate = (data: InvoiceType) => {
               <p className="text-sm">
                 IFSC Code: {details.paymentInformation?.IFSCcode}
               </p>
-              <p><span className="font-semibold text-blue-600">GST IN :</span><span> 444196850336607</span></p>
             </span>
           </div>
         </div>
@@ -253,7 +260,7 @@ const InvoiceTemplate = (data: InvoiceType) => {
           <div>
             {details?.signature?.data && isDataUrl(details?.signature?.data) ? (
               <div className="text-right">
-                <p className="font-semibold text-gray-800">Signature:</p>
+                <p className= " font-semibold text-gray-800">Signature </p>
                 <img
                   src={details.signature.data}
                   className="max-w-[120px] max-h-[60px] object-contain"

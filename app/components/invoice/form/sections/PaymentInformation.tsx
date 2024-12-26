@@ -33,7 +33,14 @@ const PaymentInformation = () => {
                  <FormInput
                     name="details.paymentInformation.IFSCcode"
                     label={_t("IFSC code")}
-                    placeholder={_t("form.steps.paymentInfo.IFSCcode")}
+                    placeholder={_t("IFSC Code")}
+                    vertical
+                />
+
+                <FormInput
+                    name="details.paymentInformation.Gstin"
+                    label={_t("GST IN")}
+                    placeholder={_t("GST Number")}
                     vertical
                 />
             </div>
