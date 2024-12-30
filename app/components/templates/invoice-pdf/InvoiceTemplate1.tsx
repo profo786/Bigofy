@@ -293,7 +293,7 @@ const InvoiceTemplate = (data: InvoiceType) => {
                 <p className= " font-semibold text-gray-800">Signature </p>
                 <img
                   src={details.signature.data}
-                  className="max-w-[60px] max-h-[60px] object-contain"
+                  className="max-w-[100px] max-h-[60px] object-contain"
                   alt={`Signature of ${sender.name}`}
                 />
               </div>
