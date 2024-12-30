@@ -1,5 +1,6 @@
 // Types
 import { SignatureColor, SignatureFont } from "@/types";
+import { PercentDiamond } from "lucide-react";
 
 /**
  * Environment
@@ -147,19 +148,29 @@ export const SHORT_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
                     total: 250,
                 },
             ],
-            currency: "INR",
+            currency: "USD",
             language: "English",
             taxDetails: {
-                amount: 15,
+                amount: 0,
                 amountType: "percentage",
                 taxID: "987654321",
             },
+            cgsttaxDetails :{
+             amount : 12.5,
+             type : "percentage",
+             taxID: "987654321",
+            },
+            sgsttaxDetails :{
+                amount : 12.5,
+                type : "percentage",
+                taxID: "987654321",
+            },
             discountDetails: {
-                amount: 5,
+                amount: 0,
                 amountType: "percentage",
             },
             shippingDetails: {
-                cost: 5,
+                cost: 0,
                 costType: "percentage",
             },
             paymentInformation: {
@@ -232,16 +243,26 @@ export const SHORT_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
             currency: "INR",
             language: "English",
             taxDetails: {
-                amount: 15,
+                amount: 0,
                 amountType: "percentage",
                 taxID: "987654321",
             },
+            cgsttaxDetails :{
+                amount : 12.5,
+                type : "percentage",
+                taxID: "987654321",
+               },
+               sgsttaxDetails :{
+                   amount : 12.5,
+                   type : "percentage",
+                   taxID: "987654321",
+               },
             discountDetails: {
-                amount: 5,
+                amount: 0,
                 amountType: "percentage",
             },
             shippingDetails: {
-                cost: 5,
+                cost: 0,
                 costType: "percentage",
             },
             paymentInformation: {
@@ -311,6 +332,16 @@ export const FORM_DEFAULT_VALUES = {
             amount: 0,
             amountType: "amount",
         },
+        cgsttaxDetails :{
+            amount : 12.5,
+            type : "percentage",
+            taxID: "987654321",
+           },
+           sgsttaxDetails :{
+               amount : 12.5,
+               type : "percentage",
+               taxID: "987654321",
+           },
         shippingDetails: {
             cost: 0,
             costType: "amount",

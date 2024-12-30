@@ -22,12 +22,20 @@ const defaultChargesContext = {
     setDiscountSwitch: (newValue: boolean) => {},
     taxSwitch: false,
     setTaxSwitch: (newValue: boolean) => {},
+    cgsttaxSwitch: false,
+    setcgstTaxSwitch: (newValue: boolean) => {},
+    sgsttaxSwitch: false,
+    setsgstTaxSwitch: (newValue: boolean) => {},
     shippingSwitch: false,
     setShippingSwitch: (newValue: boolean) => {},
     discountType: "amount",
     setDiscountType: (newValue: SetStateAction<string>) => {},
     taxType: "amount",
     setTaxType: (newValue: SetStateAction<string>) => {},
+    cgsttaxType: "amount",
+    setcgstTaxType: (newValue: SetStateAction<string>) => {},
+    sgsttaxType: "amount",
+    setsgstTaxType: (newValue: SetStateAction<string>) => {},
     shippingType: "amount",
     setShippingType: (newValue: SetStateAction<string>) => {},
     totalInWordsSwitch: true,
@@ -72,13 +80,23 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
             amount: 0,
             amountType: "amount",
         },
+
+        cgsttax: useWatch({ name: `details.cgsttaxDetails`, control }) || {
+            amount: 0,
+            amountType: "amount",
+        },
+
+        sgsttax: useWatch({ name: `details.sgsttaxDetails`, control }) || {
+            amount: 0,
+            amountType: "amount",
+        },
         shipping: useWatch({ name: `details.shippingDetails`, control }) || {
             cost: 0,
             costType: "amount",
         },
     };
 
-    const { discount, tax, shipping } = charges;
+    const { discount, cgsttax,sgsttax, tax, shipping } = charges;
 
     // Switch states. On/Off
     const [discountSwitch, setDiscountSwitch] = useState<boolean>(
@@ -86,6 +104,12 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
     );
     const [taxSwitch, setTaxSwitch] = useState<boolean>(
         tax?.amount ? true : false
+    );
+    const [cgsttaxSwitch, setcgstTaxSwitch] = useState<boolean>(
+        cgsttax?.amount ? true : false
+    );
+    const [sgsttaxSwitch, setsgstTaxSwitch] = useState<boolean>(
+        sgsttax?.amount ? true : false
     );
     const [shippingSwitch, setShippingSwitch] = useState<boolean>(
         shipping?.cost ? true : false
@@ -102,6 +126,10 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
     // Types for discount, tax, and shipping. Amount | Percentage
     const [discountType, setDiscountType] = useState("amount");
     const [taxType, setTaxType] = useState("amount");
+    const [cgsttaxType, setcgstTaxType] = useState("amount");
+
+    const [sgsttaxType, setsgstTaxType] = useState("amount");
+
     const [shippingType, setShippingType] = useState("amount");
 
     // When loading invoice, if received values, turn on the switches
@@ -112,6 +140,12 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
 
         if (tax?.amount) {
             setTaxSwitch(true);
+        }
+        if (cgsttax?.amount) {
+            setcgstTaxSwitch(true);
+        }
+        if (sgsttax?.amount) {
+            setsgstTaxSwitch(true);
         }
 
         if (shipping?.cost) {
@@ -125,17 +159,27 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         }
 
         if (tax?.amountType == "amount") {
-            setTaxType("amount");
+            setTaxType("percentage");
         } else {
             setTaxType("percentage");
         }
+        if (cgsttax?.amountType == "amount") {
+            setcgstTaxType("amount");
+        } else {
+            setcgstTaxType("percentage");
+        }
+        if (sgsttax?.amountType == "amount") {
+            setsgstTaxType("percentage");
+        } else {
+            setsgstTaxType("percentage");
+        }
 
         if (shipping?.costType == "amount") {
-            setShippingType("amount");
+            setShippingType("percentage");
         } else {
             setShippingType("percentage");
         }
-    }, [discount?.amount, tax?.amount, shipping?.cost]);
+    }, [discount?.amount, tax?.amount,sgsttax?.amount,cgsttax?.amount, shipping?.cost]);
 
     // Check switches, if off set values to zero
     useEffect(() => {
@@ -146,11 +190,17 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         if (!taxSwitch) {
             setValue("details.taxDetails.amount", 0);
         }
+        if (!cgsttaxSwitch) {
+            setValue("details.cgsttaxDetails.amount", 0);
+        }
+        if (!sgsttaxSwitch) {
+            setValue("details.sgsttaxDetails.amount", 0);
+        }
 
         if (!shippingSwitch) {
             setValue("details.shippingDetails.cost", 0);
         }
-    }, [discountSwitch, taxSwitch, shippingSwitch]);
+    }, [discountSwitch, taxSwitch, cgsttaxSwitch,sgsttaxSwitch, shippingSwitch]);
 
     // Calculate total when values change
     useEffect(() => {
@@ -162,6 +212,10 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         discount?.amount,
         taxType,
         tax?.amount,
+        cgsttaxType,
+        cgsttax?.amount,
+        sgsttaxType,
+        sgsttax?.amount,
         shippingType,
         shipping?.cost,
     ]);
@@ -184,10 +238,16 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
         let discountAmount: number =
             parseFloat(discount!.amount.toString()) ?? 0;
         let taxAmount: number = parseFloat(tax!.amount.toString()) ?? 0;
+        let cgsttaxAmount: number = parseFloat(cgsttax!.amount.toString()) ?? 0;
+        let sgsttaxAmount: number = parseFloat(sgsttax!.amount.toString()) ?? 0;
+
         let shippingCost: number = parseFloat(shipping!.cost.toString()) ?? 0;
 
         let discountAmountType: string = "amount";
+        let cgsttaxAmountType: string = "amount";
+        let sgsttaxAmountType: string = "amount";
         let taxAmountType: string = "amount";
+        
         let shippingCostType: string = "amount";
 
         let total: number = totalSum;
@@ -213,6 +273,26 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
             }
             setValue("details.taxDetails.amount", taxAmount);
         }
+        if (!isNaN(cgsttaxAmount)) {
+            if (taxType == "amount") {
+                total += cgsttaxAmount;
+                cgsttaxAmountType = "amount";
+            } else {
+                total += total * (cgsttaxAmount / 100);
+                cgsttaxAmountType = "percentage";
+            }
+            setValue("details.cgsttaxDetails.amount", cgsttaxAmount);
+        }
+        if (!isNaN(sgsttaxAmount)) {
+            if (taxType == "amount") {
+                total += sgsttaxAmount;
+                sgsttaxAmountType = "amount";
+            } else {
+                total += total * (sgsttaxAmount / 100);
+                sgsttaxAmountType = "percentage";
+            }
+            setValue("details.sgsttaxDetails.amount", sgsttaxAmount);
+        }
 
         if (!isNaN(shippingCost)) {
             if (shippingType == "amount") {
@@ -229,6 +309,9 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
 
         setValue("details.discountDetails.amountType", discountAmountType);
         setValue("details.taxDetails.amountType", taxAmountType);
+        setValue("details.cgsttaxDetails.amountType", cgsttaxAmountType);
+        setValue("details.sgsttaxDetails.amountType", sgsttaxAmountType);
+
         setValue("details.shippingDetails.costType", shippingCostType);
 
         setValue("details.totalAmount", total);
@@ -247,12 +330,20 @@ export const ChargesContextProvider = ({ children }: ChargesContextProps) => {
                 setDiscountSwitch,
                 taxSwitch,
                 setTaxSwitch,
+                cgsttaxSwitch,
+                setcgstTaxSwitch,
+                sgsttaxSwitch,
+                setsgstTaxSwitch,
                 shippingSwitch,
                 setShippingSwitch,
                 discountType,
                 setDiscountType,
                 taxType,
                 setTaxType,
+                cgsttaxType,
+                setcgstTaxType,
+                sgsttaxType,
+                setsgstTaxType,
                 shippingType,
                 setShippingType,
                 totalInWordsSwitch,

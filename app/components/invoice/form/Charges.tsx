@@ -21,167 +21,217 @@ import { formatNumberWithCommas } from "@/lib/helpers";
 import { InvoiceType } from "@/types";
 
 const Charges = () => {
-    const {
-        formState: { errors },
-    } = useFormContext<InvoiceType>();
+  const {
+    formState: { errors },
+  } = useFormContext<InvoiceType>();
 
-    const { _t } = useTranslationContext();
+  const { _t } = useTranslationContext();
 
-    const {
-        discountSwitch,
-        setDiscountSwitch,
-        taxSwitch,
-        setTaxSwitch,
-        shippingSwitch,
-        setShippingSwitch,
-        discountType,
-        setDiscountType,
-        taxType,
-        setTaxType,
-        shippingType,
-        setShippingType,
-        totalInWordsSwitch,
-        setTotalInWordsSwitch,
-        currency,
-        subTotal,
-        totalAmount,
-    } = useChargesContext();
+  const {
+    cgsttaxSwitch,
+    cgsttaxType,
+    sgsttaxType,
+    sgsttaxSwitch,
+    setsgstTaxSwitch,
+    setcgstTaxSwitch,
+    setcgstTaxType,
+    setsgstTaxType,
+    discountSwitch,
+    setDiscountSwitch,
+    taxSwitch,
+    setTaxSwitch,
+    shippingSwitch,
+    setShippingSwitch,
+    discountType,
+    setDiscountType,
+    taxType,
+    setTaxType,
+    shippingType,
+    setShippingType,
+    totalInWordsSwitch,
+    setTotalInWordsSwitch,
+    currency,
+    subTotal,
+    totalAmount,
+  } = useChargesContext();
 
-    const switchAmountType = (
-        type: string,
-        setType: (type: string) => void
-    ) => {
-        if (type == "amount") {
-            setType("percentage");
-        } else {
-            setType("amount");
-        }
-    };
-    return (
-        <>
-            {/* Charges */}
-            <div className="flex flex-col gap-3 min-w-[20rem]">
-                {/* Switches */}
-                <div className="flex justify-evenly pb-6">
-                    <div>
-                        <Label>{_t("form.steps.summary.discount")}</Label>
+  const switchAmountType = (type: string, setType: (type: string) => void) => {
+    if (type == "amount") {
+      setType("percentage");
+    } else {
+      setType("amount");
+    }
+  };
+  return (
+    <>
+      {/* Charges */}
+      
+      <div className="flex flex-col justify-center  px-6 gap-y-5">
+        <div className="flex justify-between  items-center">
+          <div>{_t("form.steps.summary.subTotal")}</div>
 
-                        <div>
-                            <div>
-                                <Switch
-                                    checked={discountSwitch}
-                                    onCheckedChange={(value) => {
-                                        setDiscountSwitch(value);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+          <div>
+            {formatNumberWithCommas(subTotal)} {currency}
+          </div>
+        </div>
+        {discountSwitch && (
+          <ChargeInput
+            label={_t("form.steps.summary.discount")}
+            name="details.discountDetails.amount"
+            switchAmountType={switchAmountType}
+            type={discountType}
+            setType={setDiscountType}
+            currency={currency}
+          />
+        )}
 
-                    <div>
-                        <Label>{_t("form.steps.summary.tax")}</Label>
+        {taxSwitch && (
+          <ChargeInput
+            label={_t("form.steps.summary.tax")}
+            name="details.taxDetails.amount"
+            switchAmountType={switchAmountType}
+            type={taxType}
+            setType={setTaxType}
+            currency={currency}
+          />
+        )}
 
-                        <div>
-                            <div>
-                                <Switch
-                                    checked={taxSwitch}
-                                    onCheckedChange={(value) => {
-                                        setTaxSwitch(value);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+        {cgsttaxSwitch && (
+          <ChargeInput
+            label={_t("CGST")}
+            name="details.cgsttaxDetails.amount"
+            switchAmountType={switchAmountType}
+            type={cgsttaxType}
+            setType={setcgstTaxType}
+            currency={currency}
+          />
+        )}
 
-                    <div>
-                        <Label>{_t("form.steps.summary.shipping")}</Label>
+        {sgsttaxSwitch && (
+          <ChargeInput
+            label={_t("SGST")}
+            name="details.sgsttaxDetails.amount"
+            switchAmountType={switchAmountType}
+            type={sgsttaxType}
+            setType={setsgstTaxType}
+            currency={currency}
+          />
+        )}
 
-                        <div>
-                            <div>
-                                <Switch
-                                    checked={shippingSwitch}
-                                    onCheckedChange={(value) => {
-                                        setShippingSwitch(value);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        {shippingSwitch && (
+          <ChargeInput
+            label={_t("form.steps.summary.shipping")}
+            name="details.shippingDetails.cost"
+            switchAmountType={switchAmountType}
+            type={shippingType}
+            setType={setShippingType}
+            currency={currency}
+          />
+        )}
 
-                <div className="flex flex-col justify-center px-5 gap-y-3">
-                    <div className="flex justify-between items-center">
-                        <div>{_t("form.steps.summary.subTotal")}</div>
+        <div className="flex justify-between items-center">
+          <div>{_t("form.steps.summary.totalAmount")}</div>
 
-                        <div>
-                            {formatNumberWithCommas(subTotal)} {currency}
-                        </div>
-                    </div>
-                    {discountSwitch && (
-                        <ChargeInput
-                            label={_t("form.steps.summary.discount")}
-                            name="details.discountDetails.amount"
-                            switchAmountType={switchAmountType}
-                            type={discountType}
-                            setType={setDiscountType}
-                            currency={currency}
-                        />
-                    )}
+          <div >
+            <p>
+              {formatNumberWithCommas(totalAmount)} {currency}
+            </p>
 
-                    {taxSwitch && (
-                        <ChargeInput
-                            label={_t("form.steps.summary.tax")}
-                            name="details.taxDetails.amount"
-                            switchAmountType={switchAmountType}
-                            type={taxType}
-                            setType={setTaxType}
-                            currency={currency}
-                        />
-                    )}
+            <small className="text-sm font-medium text-destructive">
+              {errors.details?.totalAmount?.message}
+            </small>
+          </div>
+        </div>
 
-                    {shippingSwitch && (
-                        <ChargeInput
-                            label={_t("form.steps.summary.shipping")}
-                            name="details.shippingDetails.cost"
-                            switchAmountType={switchAmountType}
-                            type={shippingType}
-                            setType={setShippingType}
-                            currency={currency}
-                        />
-                    )}
+        <div className="flex justify-between items-center">
+          <p>{_t("form.steps.summary.includeTotalInWords")}</p>{" "}
+          <p>
+            {totalInWordsSwitch
+              ? _t("form.steps.summary.yes")
+              : _t("form.steps.summary.no")}
+          </p>
+          <Switch
+          className=" ml-8"
+            checked={totalInWordsSwitch}
+            onCheckedChange={(value) => {
+              setTotalInWordsSwitch(value);
+            }}
+          />
+        </div> 
+      </div>
+      <div className="flex flex-col text-center w-full">
+        <div className="flex items-center gap-7 flex-row-reverse pb-6">
+          <div>
+            <Label>{_t("form.steps.summary.discount")}</Label>
 
-                    <div className="flex justify-between items-center">
-                        <div>{_t("form.steps.summary.totalAmount")}</div>
-
-                        <div className="">
-                            <p>
-                                {formatNumberWithCommas(totalAmount)} {currency}
-                            </p>
-
-                            <small className="text-sm font-medium text-destructive">
-                                {errors.details?.totalAmount?.message}
-                            </small>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                        <p>{_t("form.steps.summary.includeTotalInWords")}</p>{" "}
-                        <p>
-                            {totalInWordsSwitch
-                                ? _t("form.steps.summary.yes")
-                                : _t("form.steps.summary.no")}
-                        </p>
-                        <Switch
-                            checked={totalInWordsSwitch}
-                            onCheckedChange={(value) => {
-                                setTotalInWordsSwitch(value);
-                            }}
-                        />
-                    </div>
-                </div>
+            <div>
+              <div>
+                <Switch
+                  checked={discountSwitch}
+                  onCheckedChange={(value) => {
+                    setDiscountSwitch(value);
+                  }}
+                />
+              </div>
             </div>
-        </>
-    );
+          </div>
+
+          <div>
+            <Label>{_t("form.steps.summary.tax")}</Label>
+
+            <div>
+              <div>
+                <Switch
+                  checked={taxSwitch}
+                  onCheckedChange={(value) => {
+                    setTaxSwitch(value);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label>{_t("CGST")}</Label>
+            <div>
+              <Switch
+                checked={cgsttaxSwitch}
+                onCheckedChange={(value) => {
+                  setcgstTaxSwitch(value);
+                }}
+              />
+            </div>
+        </div>
+
+        <div>
+          <Label>{_t("SGST")}</Label>
+          <div>
+            <Switch
+              checked={sgsttaxSwitch}
+              onCheckedChange={(value) => {
+                setsgstTaxSwitch(value);
+              }}
+            />
+          </div>
+          </div>
+          <div>
+            <Label>{_t("form.steps.summary.shipping")}</Label>
+
+            <div>
+              <Switch
+                checked={shippingSwitch}
+                onCheckedChange={(value) => {
+                  setShippingSwitch(value);
+                }}
+              />
+            </div>
+            </div>
+
+        </div>
+      </div>
+
+    </>
+  );
 };
 
 export default Charges;

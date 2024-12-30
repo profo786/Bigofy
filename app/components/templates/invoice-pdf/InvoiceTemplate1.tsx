@@ -1,5 +1,6 @@
 import React from "react";
 
+
 // Components
 import { InvoiceLayout } from "@/app/components";
 
@@ -180,6 +181,35 @@ const InvoiceTemplate = (data: InvoiceType) => {
                   </dd>
                 </dl>
               )}
+
+        {details.cgsttaxDetails?.amount != undefined &&
+              details.cgsttaxDetails?.amount > 0 && (
+                <dl className="grid sm:grid-cols-5 gap-x-3">
+                  <dt className="col-span-3 font-semibold text-gray-800">
+                    CGST:
+                  </dt>
+                  <dd className="col-span-2 text-gray-500">
+                    {details.cgsttaxDetails.amountType === "amount"
+                      ? `+ ${details.cgsttaxDetails.amount} ${details.currency}`
+                      : `+ ${details.cgsttaxDetails.amount}%`}
+                  </dd>
+                </dl>
+              )}
+              
+         {details.sgsttaxDetails?.amount != undefined &&
+              details.sgsttaxDetails?.amount > 0 && (
+                <dl className="grid sm:grid-cols-5 gap-x-3">
+                  <dt className="col-span-3 font-semibold text-gray-800">
+                    SGST:
+                  </dt>
+                  <dd className="col-span-2 text-gray-500">
+                    {details.sgsttaxDetails.amountType === "amount"
+                      ? `+ ${details.sgsttaxDetails.amount} ${details.currency}`
+                      : `+ ${details.sgsttaxDetails.amount}%`}
+                  </dd>
+                </dl>
+              )}
+
             {details.shippingDetails?.cost != undefined &&
               details.shippingDetails?.cost > 0 && (
                 <dl className="grid sm:grid-cols-5 gap-x-3">
@@ -207,7 +237,7 @@ const InvoiceTemplate = (data: InvoiceType) => {
                 </dt>
                 <dd className="col-span-2 text-gray-500">
                   <em>
-                    {details.totalAmountInWords} {details.currency}
+                    {details.totalAmountInWords} 
                   </em>
                 </dd>
               </dl>
@@ -221,7 +251,7 @@ const InvoiceTemplate = (data: InvoiceType) => {
           <div className="my-2">
             <p className="font-semibold text-blue-600">Additional notes:</p>
             <p className="font-regular text-gray-800">
-              {details.additionalNotes}
+              {details.additionalNotes} {details.conversion}
             </p>
           </div>
           <div className="my-2">
@@ -263,12 +293,12 @@ const InvoiceTemplate = (data: InvoiceType) => {
                 <p className= " font-semibold text-gray-800">Signature </p>
                 <img
                   src={details.signature.data}
-                  className="max-w-[120px] max-h-[60px] object-contain"
+                  className="max-w-[60px] max-h-[60px] object-contain"
                   alt={`Signature of ${sender.name}`}
                 />
               </div>
             ) : details.signature?.data ? (
-              <div className="text-right">
+              <div className="text-right ">
                 <p className="font-semibold text-gray-800">Signature:</p>
                 <p
                   style={{
