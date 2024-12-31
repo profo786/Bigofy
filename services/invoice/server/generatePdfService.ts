@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Chromium
 import chromium from "@sparticuz/chromium";
-
-// Helpers
 import { getInvoiceTemplate } from "@/lib/helpers";
-
-// Variables
 import { CHROMIUM_EXECUTABLE_PATH, ENV, TAILWIND_CDN } from "@/lib/variables";
-
-// Types
 import { InvoiceType } from "@/types";
+import { chromium as playwrightChromium } from "playwright";
 
 /**
- * Generate a PDF document of an invoice based on the provided data.
+ * Generate a PDF document of an invoice based on the provided data using Playwright.
  *
  * @async
  * @param {NextRequest} req - The Next.js request object.
@@ -22,8 +15,6 @@ import { InvoiceType } from "@/types";
  */
 export async function generatePdfService(req: NextRequest) {
     const body: InvoiceType = await req.json();
-
-    // Create a browser instance
     let browser;
 
     try {
@@ -38,23 +29,18 @@ export async function generatePdfService(req: NextRequest) {
             InvoiceTemplate(body)
         );
 
-        // Launch the browser in production or development mode depending on the environment
+        // Launch the browser based on environment
         if (ENV === "production") {
-            const puppeteer = await import("puppeteer-core");
-            browser = await puppeteer.launch({
+            browser = await playwrightChromium.launch({
                 args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
                 executablePath: await chromium.executablePath(
                     CHROMIUM_EXECUTABLE_PATH
                 ),
                 headless: true,
-                ignoreHTTPSErrors: true,
             });
-        } else if (ENV === "development") {
-            const puppeteer = await import("puppeteer");
-            browser = await puppeteer.launch({
-                args: ["--no-sandbox", "--disable-setuid-sandbox"],
-                headless: "new",
+        } else {
+            browser = await playwrightChromium.launch({
+                headless: true,
             });
         }
 
@@ -62,40 +48,37 @@ export async function generatePdfService(req: NextRequest) {
             throw new Error("Failed to launch browser");
         }
 
-        const page = await browser.newPage();
-        console.log("Page opened"); // Debugging log
+        // Create a new context and page
+        const context = await browser.newContext();
+        const page = await context.newPage();
+        console.log("Page opened");
 
         // Set the HTML content of the page
-        await page.setContent(await htmlTemplate, {
-            // * "waitUntil" prop makes fonts work in templates
-            waitUntil: "networkidle0",
+        await page.setContent(htmlTemplate, {
+            waitUntil: 'networkidle'
         });
-        console.log("Page content set"); // Debugging log
+        console.log("Page content set");
 
         // Add Tailwind CSS
         await page.addStyleTag({
-            url: TAILWIND_CDN,
+            url: TAILWIND_CDN
         });
-        console.log("Style tag added"); // Debugging log
+        console.log("Style tag added");
 
-        // Generate the PDF
-        const pdf: Buffer = await page.pdf({
-            format: "a4",
-            printBackground: true,
+        // Generate PDF
+        const pdf = await page.pdf({
+            format: 'A4',
+            printBackground: true
         });
-        console.log("PDF generated"); // Debugging log
+        console.log("PDF generated");
 
-        for (const page of await browser.pages()) {
-            await page.close();
-        }
-
-        // Close the Puppeteer browser
+        // Close context and browser
+        await context.close();
         await browser.close();
-        console.log("Browser closed"); // Debugging log
+        console.log("Browser closed");
 
-        // Create a Blob from the PDF data
+        // Create response with PDF
         const pdfBlob = new Blob([pdf], { type: "application/pdf" });
-
         const response = new NextResponse(pdfBlob, {
             headers: {
                 "Content-Type": "application/pdf",
@@ -107,14 +90,12 @@ export async function generatePdfService(req: NextRequest) {
         return response;
     } catch (error) {
         console.error(error);
-
-        // Return an error response
         return new NextResponse(`Error generating PDF: \n${error}`, {
             status: 500,
         });
     } finally {
         if (browser) {
-            await Promise.race([browser.close(), browser.close(), browser.close()]);
+            await browser.close().catch(console.error);
         }
     }
 }
