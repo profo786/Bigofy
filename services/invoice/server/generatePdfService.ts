@@ -3,83 +3,132 @@ import chromium from "@sparticuz/chromium";
 import { getInvoiceTemplate } from "@/lib/helpers";
 import { CHROMIUM_EXECUTABLE_PATH, ENV, TAILWIND_CDN } from "@/lib/variables";
 import { InvoiceType } from "@/types";
-import { chromium as playwrightChromium } from "playwright";
+import { chromium as playwrightChromium, Page } from "playwright";
 
-/**
- * Generate a PDF document of an invoice based on the provided data using Playwright.
- *
- * @async
- * @param {NextRequest} req - The Next.js request object.
- * @throws {Error} If there is an error during the PDF generation process.
- * @returns {Promise<NextResponse>} A promise that resolves to a NextResponse object containing the generated PDF.
- */
+// Configuration constants
+const BROWSER_LAUNCH_TIMEOUT = 30000;
+const PAGE_OPERATION_TIMEOUT = 20000;
+
 export async function generatePdfService(req: NextRequest) {
     const body: InvoiceType = await req.json();
-    let browser;
+    let browser = null;
+    let context = null;
+    let page = null;
 
     try {
+        // Initialize ReactDOMServer
         const ReactDOMServer = (await import("react-dom/server")).default;
-
-        // Get the selected invoice template
+        
+        // Get and render template
+        console.log("Getting template...");
         const templateId = body.details.pdfTemplate;
         const InvoiceTemplate = await getInvoiceTemplate(templateId);
-
-        // Read the HTML template from a React component
         const htmlTemplate = ReactDOMServer.renderToStaticMarkup(
             InvoiceTemplate(body)
         );
+        console.log("Template rendered successfully");
 
-        // Launch the browser based on environment
-        if (ENV === "production") {
-            browser = await playwrightChromium.launch({
-                args: chromium.args,
-                executablePath: await chromium.executablePath(
-                    CHROMIUM_EXECUTABLE_PATH
-                ),
+        // Configure browser launch options
+        const browserConfig = ENV === "production" 
+            ? {
+                args: [
+                    ...chromium.args,
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-accelerated-2d-canvas",
+                    "--no-first-run",
+                    "--no-zygote",
+                    "--disable-gpu",
+                    "--single-process",
+                    "--use-gl=swiftshader",
+                ],
+                executablePath: await chromium.executablePath(CHROMIUM_EXECUTABLE_PATH),
                 headless: true,
-            });
-        } else {
-            browser = await playwrightChromium.launch({
+                timeout: BROWSER_LAUNCH_TIMEOUT,
+            }
+            : {
                 headless: true,
+                timeout: BROWSER_LAUNCH_TIMEOUT,
+            };
+
+        // Launch browser with error handling
+        console.log("Launching browser...");
+        browser = await playwrightChromium.launch(browserConfig)
+            .catch(error => {
+                console.error("Browser launch failed:", error);
+                throw new Error(`Failed to launch browser: ${error.message}`);
             });
-        }
 
         if (!browser) {
-            throw new Error("Failed to launch browser");
+            throw new Error("Browser initialization failed");
         }
+        console.log("Browser launched successfully");
 
-        // Create a new context and page
-        const context = await browser.newContext();
-        const page = await context.newPage();
-        console.log("Page opened");
-
-        // Set the HTML content of the page
-        await page.setContent(htmlTemplate, {
-            waitUntil: 'networkidle'
+        // Create context with specific viewport
+        context = await browser.newContext({
+            viewport: { width: 1920, height: 1080 },
+            baseURL: process.env.NEXT_PUBLIC_APP_URL,
         });
-        console.log("Page content set");
+
+        // Create new page
+        page = await context.newPage();
+        console.log("Page created successfully");
+
+        // Set content with proper error handling
+        console.log("Setting page content...");
+        await page.setContent(htmlTemplate, {
+            timeout: PAGE_OPERATION_TIMEOUT,
+            waitUntil: 'domcontentloaded',
+        }).catch(error => {
+            throw new Error(`Failed to set page content: ${error.message}`);
+        });
 
         // Add Tailwind CSS
+        console.log("Adding Tailwind CSS...");
         await page.addStyleTag({
-            url: TAILWIND_CDN
+            url: TAILWIND_CDN,
+        }).catch(error => {
+            throw new Error(`Failed to add Tailwind CSS: ${error.message}`);
         });
-        console.log("Style tag added");
 
-        // Generate PDF
-        const pdf = await page.pdf({
-            format: 'A4',
-            printBackground: true
-        });
-        console.log("PDF generated");
+        // Wait for styles to be applied
+        await page.waitForTimeout(2000);
 
-        // Close context and browser
-        await context.close();
-        await browser.close();
-        console.log("Browser closed");
+        // Generate PDF with timeout handling
+        const generatePdfWithTimeout = async (page: Page, timeout: number): Promise<Buffer> => {
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("PDF generation timed out")), timeout)
+            );
+            
+            const pdfPromise = page.pdf({
+                format: 'A4',
+                printBackground: true,
+                margin: {
+                    top: '20px',
+                    right: '20px',
+                    bottom: '20px',
+                    left: '20px',
+                },
+                preferCSSPageSize: true,
+            });
+            
+            const result = await Promise.race([pdfPromise, timeoutPromise]);
+            return Buffer.from(result);
+        };
 
-        // Create response with PDF
-        const pdfBlob = new Blob([pdf], { type: "application/pdf" });
-        const response = new NextResponse(pdfBlob, {
+        // Generate PDF with proper error handling
+        console.log("Generating PDF...");
+        const pdfBuffer = await generatePdfWithTimeout(page, PAGE_OPERATION_TIMEOUT)
+            .catch(error => {
+                throw new Error(`Failed to generate PDF: ${error.message}`);
+            });
+
+        // Convert Buffer to Uint8Array for NextResponse
+        const pdfUint8Array = new Uint8Array(pdfBuffer);
+
+        // Create and return response with proper typing
+        return new NextResponse(pdfUint8Array, {
             headers: {
                 "Content-Type": "application/pdf",
                 "Content-Disposition": "inline; filename=invoice.pdf",
@@ -87,15 +136,34 @@ export async function generatePdfService(req: NextRequest) {
             status: 200,
         });
 
-        return response;
     } catch (error) {
-        console.error(error);
-        return new NextResponse(`Error generating PDF: \n${error}`, {
-            status: 500,
+        console.error("PDF Generation Error:", {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
         });
+
+        return new NextResponse(
+            JSON.stringify({
+                error: "PDF Generation failed",
+                details: error instanceof Error ? error.message : String(error),
+                timestamp: new Date().toISOString(),
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
     } finally {
-        if (browser) {
-            await browser.close().catch(console.error);
+        // Cleanup resources in reverse order
+        try {
+            if (page) await page.close();
+            if (context) await context.close();
+            if (browser) await browser.close();
+            console.log("Resources cleaned up successfully");
+        } catch (error) {
+            console.error("Error during cleanup:", error);
         }
     }
 }
