@@ -30,34 +30,7 @@ export async function generatePdfService(req: NextRequest) {
 
     // Configure browser launch options
     const browserConfig =
-      ENV === "production"
-        ? {
-            args: [
-              ...chromium.args,
-              "--no-sandbox",
-              "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--disable-accelerated-2d-canvas",
-              "--no-first-run",
-              "--no-zygote",
-              "--disable-gpu",
-              "--single-process",
-              "--use-gl=swiftshader",
-            ],
-            executablePath: await chromium.executablePath(
-              CHROMIUM_EXECUTABLE_PATH
-            ),
-            headless: true,
-            env: {
-              GOOGLE_CHROME_PATH: process.env.GOOGLE_CHROME_PATH || "",
-              NODE_ENV: process.env.NODE_ENV as
-                | "development"
-                | "production"
-                | "test",
-              ...(process.env.TZ && { TZ: process.env.TZ }),
-            },
-          }
-        : {
+         {
             headless: true,
             timeout: BROWSER_LAUNCH_TIMEOUT,
           };
