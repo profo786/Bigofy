@@ -1,33 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import chromium from "@sparticuz/chromium-min";
-import puppeteer from "puppeteer-core";
+
+// Chromium
+import chromium from "@sparticuz/chromium";
+
+// Helpers
 import { getInvoiceTemplate } from "@/lib/helpers";
+
+// Variables
 import { CHROMIUM_EXECUTABLE_PATH, ENV, TAILWIND_CDN } from "@/lib/variables";
+
+// Types
 import { InvoiceType } from "@/types";
 
 /**
- * Initialize browser instance with appropriate configuration
- * @returns {Promise<Browser>} Configured browser instance
- */
-async function getBrowser() {
-  const config = {
-    args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
-
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(
-      ENV === "production"
-        ? CHROMIUM_EXECUTABLE_PATH
-        : `https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar`
-    ),
-    headless: chromium.headless,
-    ignoreHTTPSErrors: true,
-  };
-
-  return puppeteer.launch(config);
-}
-
-/**
- * Generate a PDF document of an invoice based on the provided data using Puppeteer.
+ * Generate a PDF document of an invoice based on the provided data.
  *
  * @async
  * @param {NextRequest} req - The Next.js request object.
@@ -36,6 +22,8 @@ async function getBrowser() {
  */
 export async function generatePdfService(req: NextRequest) {
   const body: InvoiceType = await req.json();
+
+  // Create a browser instance
   let browser;
 
   try {
@@ -50,47 +38,65 @@ export async function generatePdfService(req: NextRequest) {
       InvoiceTemplate(body)
     );
 
-    // Launch browser
-    browser = await getBrowser();
+    // Launch the browser in production or development mode depending on the environment
+    if (ENV === "production") {
+      const puppeteer = await import("puppeteer-core");
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(CHROMIUM_EXECUTABLE_PATH),
+        headless: true,
+        ignoreHTTPSErrors: true, // Type assertion
+      } as any);
+    } else if (ENV === "development") {
+      const puppeteer = await import("puppeteer");
+      browser = await puppeteer.launch({
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: "new",
+      });
+    }
+
     if (!browser) {
       throw new Error("Failed to launch browser");
     }
 
-    // Create new page
     const page = await browser.newPage();
-    console.log("Page opened");
+    console.log("Page opened"); // Debugging log
 
-    // Set content and wait for network idle
-    await page.setContent(htmlTemplate, {
+    // Set the HTML content of the page
+    await page.setContent(await htmlTemplate, {
+      // * "waitUntil" prop makes fonts work in templates
       waitUntil: "networkidle0",
     });
-    console.log("Page content set");
+    console.log("Page content set"); // Debugging log
 
     // Add Tailwind CSS
     await page.addStyleTag({
       url: TAILWIND_CDN,
     });
-    console.log("Style tag added");
+    console.log("Style tag added"); // Debugging log
 
-    // Generate PDF with margins
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "1cm",
-        right: "1cm",
-        bottom: "1cm",
-        left: "1cm",
-      },
-    });
-    console.log("PDF generated");
+    // Generate the PDF
+    const pdf: Buffer = Buffer.from(
+      await page.pdf({
+        format: "a4",
+        printBackground: true,
+      })
+    );
+    console.log("PDF generated"); // Debugging log
 
-    // Close browser
+    for (const page of await browser.pages()) {
+      await page.close();
+    }
+
+    // Close the Puppeteer browser
     await browser.close();
-    console.log("Browser closed");
+    console.log("Browser closed"); // Debugging log
 
-    // Create response with PDF
-    const response = new NextResponse(pdf, {
+    // Create a Blob from the PDF data
+    const pdfBlob = new Blob([pdf], { type: "application/pdf" });
+
+    const response = new NextResponse(pdfBlob, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": "inline; filename=invoice.pdf",
@@ -100,23 +106,15 @@ export async function generatePdfService(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Error generating PDF:", error);
+    console.error(error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    return new NextResponse(
-      JSON.stringify({
-        error: "Failed to generate PDF",
-        details: errorMessage,
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    // Return an error response
+    return new NextResponse(`Error generating PDF: \n${error}`, {
+      status: 500,
+    });
   } finally {
     if (browser) {
-      await browser.close().catch(console.error);
+      await Promise.race([browser.close(), browser.close(), browser.close()]);
     }
   }
 }
