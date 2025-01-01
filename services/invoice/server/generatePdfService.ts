@@ -77,12 +77,11 @@ export async function generatePdfService(req: NextRequest) {
     console.log("Style tag added"); // Debugging log
 
     // Generate the PDF
-    const pdf: Buffer = Buffer.from(
-      await page.pdf({
-        format: "a4",
-        printBackground: true,
-      })
-    );
+    const pdf: Buffer = await page.pdf({
+      format: "a4",
+      printBackground: true,
+      timeout: 30000,
+    });
     console.log("PDF generated"); // Debugging log
 
     for (const page of await browser.pages()) {
