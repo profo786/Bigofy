@@ -1,16 +1,7 @@
 import React from "react";
-
-
-// Components
 import { InvoiceLayout } from "@/app/components";
-
-// Helpers
 import { formatNumberWithCommas, isDataUrl } from "@/lib/helpers";
-
-// Variables
 import { DATE_OPTIONS } from "@/lib/variables";
-
-// Types
 import { InvoiceType } from "@/types";
 
 const InvoiceTemplate = (data: InvoiceType) => {
@@ -32,29 +23,32 @@ const InvoiceTemplate = (data: InvoiceType) => {
             {sender.city} , {sender.zipCode}
             <br />
             {sender.country}
-            <br />
           </address>
         </div>
 
-        <div className="text-right">
+        <div className="text-right flex flex-col items-end">
           {details.invoiceLogo && (
-            <img
-              className="mx-auto md:ml-auto md:mr-0"
-              src={details.invoiceLogo}
-              width={80}
-              height={80}
-              alt={`Logo of ${sender.name}`}
-            />
+            <div className="w-32 h-16 relative mb-4">
+              <img
+                className="absolute top-0 right-0 max-w-full max-h-full object-contain"
+                src={details.invoiceLogo}
+                alt={`Logo of ${sender.name}`}
+              />
+            </div>
           )}
-          <h1 className="mt-2 text-lg md:text-xl font-semibold text-blue-600">
+          <h1 className="text-lg md:text-xl font-semibold text-blue-600">
             {sender.name}
           </h1>
-          <div className=" mt-1">
-            <p className=" text-sm">
-              <span className=" font-semibold">GST IN : </span>
-              <span className=" text-gray-600">{details.paymentInformation?.Gstin}</span>
-            </p>
-          </div>
+          {details.paymentInformation?.Gstin && (
+            <div className="mt-1">
+              <p className="text-sm">
+                <span className="font-semibold">GST IN : </span>
+                <span className="text-gray-600">
+                  {details.paymentInformation.Gstin}
+                </span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -68,253 +62,156 @@ const InvoiceTemplate = (data: InvoiceType) => {
             {receiver.address}, {receiver.zipCode}
             <br />
             {receiver.city}, {receiver.country}
-            <br />
           </address>
         </div>
         <div className="sm:text-right space-y-2">
-          <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-2">
-            <dl className="grid sm:grid-cols-6 gap-x-3">
-              <dt className="col-span-3 font-semibold text-gray-800">
-                Invoice date:
-              </dt>
-              <dd className="col-span-3 text-gray-500">
-                {new Date(details.invoiceDate).toLocaleDateString(
-                  "en-US",
-                  DATE_OPTIONS
+          <dl className="grid sm:grid-cols-6 gap-x-3">
+            <dt className="col-span-3 font-semibold text-gray-800">
+              Invoice date:
+            </dt>
+            <dd className="col-span-3 text-gray-500">
+              {new Date(details.invoiceDate).toLocaleDateString(
+                "en-US",
+                DATE_OPTIONS
+              )}
+            </dd>
+          </dl>
+          <dl className="grid sm:grid-cols-6 gap-x-3">
+            <dt className="col-span-3 font-semibold text-gray-800">
+              Due date:
+            </dt>
+            <dd className="col-span-3 text-gray-500">
+              {new Date(details.dueDate).toLocaleDateString(
+                "en-US",
+                DATE_OPTIONS
+              )}
+            </dd>
+          </dl>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="border border-gray-200 p-4 rounded-lg">
+          <div className="grid grid-cols-4 gap-4 mb-4 text-sm font-medium text-gray-500 uppercase">
+            <div className="col-span-1">Item</div>
+            <div className="text-center">Qty</div>
+            <div className="text-center">Rate</div>
+            <div className="text-right">Amount</div>
+          </div>
+          {details.items.map((item, index) => (
+            <div key={index} className="grid grid-cols-4 gap-4 py-3 border-t border-gray-200">
+              <div className="col-span-1">
+                <p className="font-medium text-gray-800">{item.name}</p>
+                {item.description && (
+                  <p className="text-sm text-gray-600 mt-1">{item.description}</p>
                 )}
+              </div>
+              <div className="text-center text-gray-800 self-start pt-1">{item.quantity}</div>
+              <div className="text-center text-gray-800 self-start pt-1">
+                {item.unitPrice} {details.currency}
+              </div>
+              <div className="text-right text-gray-800 self-start pt-1">
+                {item.total} {details.currency}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-6 flex justify-end">
+        <div className="w-64 space-y-3">
+          <dl className="grid grid-cols-2 gap-x-3">
+            <dt className="font-semibold text-gray-800">Subtotal:</dt>
+            <dd className="text-right text-gray-500">
+              {formatNumberWithCommas(Number(details.subTotal))} {details.currency}
+            </dd>
+          </dl>
+          
+          {details.cgsttaxDetails?.amount && (
+            <dl className="grid grid-cols-2 gap-x-3">
+              <dt className="font-semibold text-gray-800">CGST:</dt>
+              <dd className="text-right text-gray-500">
+                + {details.cgsttaxDetails.amount}%
               </dd>
             </dl>
-            <dl className="grid sm:grid-cols-6 gap-x-3">
-              <dt className="col-span-3 font-semibold text-gray-800">
-                Due date:
-              </dt>
-              <dd className="col-span-3 text-gray-500">
-                {new Date(details.dueDate).toLocaleDateString(
-                  "en-US",
-                  DATE_OPTIONS
-                )}
+          )}
+          
+          {details.sgsttaxDetails?.amount && (
+            <dl className="grid grid-cols-2 gap-x-3">
+              <dt className="font-semibold text-gray-800">SGST:</dt>
+              <dd className="text-right text-gray-500">
+                + {details.sgsttaxDetails.amount}%
               </dd>
             </dl>
+          )}
+
+          <dl className="grid grid-cols-2 gap-x-3 pt-3 border-t border-gray-200">
+            <dt className="font-semibold text-gray-800">Total:</dt>
+            <dd className="text-right text-gray-800 font-semibold">
+              {formatNumberWithCommas(Number(details.totalAmount))} {details.currency}
+            </dd>
+          </dl>
+          
+          {details.totalAmountInWords && (
+            <p className="text-sm text-gray-500 italic">
+              {details.totalAmountInWords}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-6">
+        {details.additionalNotes && (
+          <div>
+            <h4 className="font-semibold text-blue-600">Additional notes:</h4>
+            <p className="mt-1 text-gray-800">{details.additionalNotes}</p>
+          </div>
+        )}
+
+        {details.paymentTerms && (
+          <div>
+            <h4 className="font-semibold text-blue-600">Payment terms:</h4>
+            <p className="mt-1 text-gray-800">{details.paymentTerms}</p>
+          </div>
+        )}
+
+        <div>
+          <h4 className="font-semibold text-gray-800">Please send the payment to this address</h4>
+          <div className="mt-2 space-y-1 text-sm">
+            <p>Bank: {details.paymentInformation?.bankName}</p>
+            <p>Account name: {details.paymentInformation?.accountName}</p>
+            <p>Account no: {details.paymentInformation?.accountNumber}</p>
+            <p>IFSC Code: {details.paymentInformation?.IFSCcode}</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-3">
-        <div className="border border-gray-200 p-1 rounded-lg space-y-1">
-          <div className="hidden sm:grid sm:grid-cols-5">
-            <div className="sm:col-span-2 text-xs font-medium text-gray-500 uppercase">
-              Item
-            </div>
-            <div className="text-left text-xs font-medium text-gray-500 uppercase">
-              Qty
-            </div>
-            <div className="text-left text-xs font-medium text-gray-500 uppercase">
-              Rate
-            </div>
-            <div className="text-right text-xs font-medium text-gray-500 uppercase">
-              Amount
-            </div>
-          </div>
-          <div className="hidden sm:block border-b border-gray-200"></div>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-y-1">
-            {details.items.map((item, index) => (
-              <React.Fragment key={index}>
-                <div className="col-span-full sm:col-span-2 border-b border-gray-300">
-                  <p className="font-medium text-gray-800">{item.name}</p>
-                  <p className="text-xs text-gray-600">{item.description}</p>
-                </div>
-                <div className="border-b border-gray-300">
-                  <p className="text-gray-800">{item.quantity}</p>
-                </div>
-                <div className="border-b border-gray-300">
-                  <p className="text-gray-800">
-                    {item.unitPrice} {details.currency}
-                  </p>
-                </div>
-                <div className="border-b border-gray-300">
-                  <p className="sm:text-right text-gray-800">
-                    {item.total} {details.currency}
-                  </p>
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-          <div className="sm:hidden border-b border-gray-200"></div>
+      <div className="mt-8 flex justify-between items-end">
+        <div>
+          <p className="text-gray-500 text-sm">contact information:</p>
+          <p className="text-gray-800">{sender.email}</p>
+          <p className="text-gray-800">{sender.phone}</p>
         </div>
-      </div>
 
-      <div className="mt-2 flex sm:justify-end">
-        <div className="sm:text-right space-y-2">
-          <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-2">
-            <dl className="grid sm:grid-cols-5 gap-x-3">
-              <dt className="col-span-3 font-semibold text-gray-800">
-                Subtotal:
-              </dt>
-              <dd className="col-span-2 text-gray-500">
-                {formatNumberWithCommas(Number(details.subTotal))}{" "}
-                {details.currency}
-              </dd>
-            </dl>
-            {details.discountDetails?.amount != undefined &&
-              details.discountDetails?.amount > 0 && (
-                <dl className="grid sm:grid-cols-5 gap-x-3">
-                  <dt className="col-span-3 font-semibold text-gray-800">
-                    Discount:
-                  </dt>
-                  <dd className="col-span-2 text-gray-500">
-                    {details.discountDetails.amountType === "amount"
-                      ? `- ${details.discountDetails.amount} ${details.currency}`
-                      : `- ${details.discountDetails.amount}%`}
-                  </dd>
-                </dl>
-              )}
-            {details.taxDetails?.amount != undefined &&
-              details.taxDetails?.amount > 0 && (
-                <dl className="grid sm:grid-cols-5 gap-x-3">
-                  <dt className="col-span-3 font-semibold text-gray-800">
-                    Tax:
-                  </dt>
-                  <dd className="col-span-2 text-gray-500">
-                    {details.taxDetails.amountType === "amount"
-                      ? `+ ${details.taxDetails.amount} ${details.currency}`
-                      : `+ ${details.taxDetails.amount}%`}
-                  </dd>
-                </dl>
-              )}
-
-        {details.cgsttaxDetails?.amount != undefined &&
-              details.cgsttaxDetails?.amount > 0 && (
-                <dl className="grid sm:grid-cols-5 gap-x-3">
-                  <dt className="col-span-3 font-semibold text-gray-800">
-                    CGST:
-                  </dt>
-                  <dd className="col-span-2 text-gray-500">
-                    {details.cgsttaxDetails.amountType === "amount"
-                      ? `+ ${details.cgsttaxDetails.amount} ${details.currency}`
-                      : `+ ${details.cgsttaxDetails.amount}%`}
-                  </dd>
-                </dl>
-              )}
-              
-         {details.sgsttaxDetails?.amount != undefined &&
-              details.sgsttaxDetails?.amount > 0 && (
-                <dl className="grid sm:grid-cols-5 gap-x-3">
-                  <dt className="col-span-3 font-semibold text-gray-800">
-                    SGST:
-                  </dt>
-                  <dd className="col-span-2 text-gray-500">
-                    {details.sgsttaxDetails.amountType === "amount"
-                      ? `+ ${details.sgsttaxDetails.amount} ${details.currency}`
-                      : `+ ${details.sgsttaxDetails.amount}%`}
-                  </dd>
-                </dl>
-              )}
-
-            {details.shippingDetails?.cost != undefined &&
-              details.shippingDetails?.cost > 0 && (
-                <dl className="grid sm:grid-cols-5 gap-x-3">
-                  <dt className="col-span-3 font-semibold text-gray-800">
-                    Shipping:
-                  </dt>
-                  <dd className="col-span-2 text-gray-500">
-                    {details.shippingDetails.costType === "amount"
-                      ? `+ ${details.shippingDetails.cost} ${details.currency}`
-                      : `+ ${details.shippingDetails.cost}%`}
-                  </dd>
-                </dl>
-              )}
-            <dl className="grid sm:grid-cols-5 gap-x-3">
-              <dt className="col-span-3 font-semibold text-gray-800">Total:</dt>
-              <dd className="col-span-2 text-gray-500">
-                {formatNumberWithCommas(Number(details.totalAmount))}{" "}
-                {details.currency}
-              </dd>
-            </dl>
-            {details.totalAmountInWords && (
-              <dl className="grid sm:grid-cols-5 gap-x-3">
-                <dt className="col-span-3 font-semibold text-gray-800">
-                  Total in words:
-                </dt>
-                <dd className="col-span-2 text-gray-500">
-                  <em>
-                    {details.totalAmountInWords} 
-                  </em>
-                </dd>
-              </dl>
+        {details.signature?.data && (
+          <div className="text-right">
+            <p className="font-semibold text-gray-800 mb-2">Signature:</p>
+            {isDataUrl(details.signature.data) ? (
+              <img
+                src={details.signature.data}
+                className="max-w-[100px] max-h-[60px] object-contain ml-auto"
+                alt="Signature"
+              />
+            ) : (
+              <p style={{
+                fontFamily: `${details.signature.fontFamily}, cursive`,
+                fontSize: "30px",
+                color: "black"
+              }}>
+                {details.signature.data}
+              </p>
             )}
           </div>
-        </div>
-      </div>
-
-      <div>
-        <div className="my-4">
-          <div className="my-2">
-            <p className="font-semibold text-blue-600">Additional notes:</p>
-            <p className="font-regular text-gray-800">
-              {details.additionalNotes} {details.conversion}
-            </p>
-          </div>
-          <div className="my-2">
-            <p className="font-semibold text-blue-600">Payment terms:</p>
-            <p className="font-regular text-gray-800">{details.paymentTerms}</p>
-          </div>
-          <div className="my-2">
-            <span className="font-semibold text-md text-gray-800">
-              Please send the payment to this address
-              <p className="text-sm">
-                Bank: {details.paymentInformation?.bankName}
-              </p>
-              <p className="text-sm">
-                Account name: {details.paymentInformation?.accountName}
-              </p>
-              <p className="text-sm">
-                Account no: {details.paymentInformation?.accountNumber}
-              </p>
-              <p className="text-sm">
-                IFSC Code: {details.paymentInformation?.IFSCcode}
-              </p>
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between ">
-          <div>
-            <p className="text-gray-500 text-sm">contact information:</p>
-            <p className="block text-sm font-medium text-gray-800">
-              {sender.email}
-            </p>
-            <p className="block text-sm font-medium text-gray-800">
-              {sender.phone}
-            </p>
-          </div>
-          <div>
-            {details?.signature?.data && isDataUrl(details?.signature?.data) ? (
-              <div className="text-right">
-                <p className= " font-semibold text-gray-800">Signature </p>
-                <img
-                  src={details.signature.data}
-                  className="max-w-[100px] max-h-[60px] object-contain"
-                  alt={`Signature of ${sender.name}`}
-                />
-              </div>
-            ) : details.signature?.data ? (
-              <div className="text-right ">
-                <p className="font-semibold text-gray-800">Signature:</p>
-                <p
-                  style={{
-                    fontSize: 30,
-                    fontWeight: 400,
-                    fontFamily: `${details.signature.fontFamily}, cursive`,
-                    color: "black",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {details.signature.data}
-                </p>
-              </div>
-            ) : null}
-          </div>
-        </div>
+        )}
       </div>
     </InvoiceLayout>
   );
