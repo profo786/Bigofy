@@ -12,7 +12,7 @@ const fieldValidators = {
   name: z
     .string()
     .min(2, { message: "Must be at least 2 characters" })
-    .max(50, { message: "Must be at most 50 characters" }),
+    .max(29, { message: "Must be at most 50 characters" }),
   address: z
     .string()
     .min(2, { message: "Must be at least 2 characters" })
@@ -24,11 +24,11 @@ const fieldValidators = {
   city: z
     .string()
     .min(1, { message: "Must be between 1 and 50 characters" })
-    .max(50, { message: "Must be between 1 and 50 characters" }),
+    .max(30, { message: "Must be between 1 and 50 characters" }),
   country: z
     .string()
     .min(1, { message: "Must be between 1 and 70 characters" })
-    .max(70, { message: "Must be between 1 and 70 characters" }),
+    .max(30, { message: "Must be between 1 and 70 characters" }),
   email: z
     .string()
     .email({ message: "Email must be a valid email" })
@@ -37,7 +37,7 @@ const fieldValidators = {
   phone: z
     .string()
     .min(1, { message: "Must be between 1 and 50 characters" })
-    .max(50, {
+    .max(20, {
       message: "Must be between 1 and 50 characters",
     }),
 
@@ -132,19 +132,16 @@ const DiscountDetailsSchema = z.object({
 
 const TaxDetailsSchema = z.object({
   amount: fieldValidators.stringToNumberWithMax,
-  taxID: fieldValidators.string,
   amountType: fieldValidators.string,
 });
 
 const cgstTaxDetailsSchema = z.object({
   amount: fieldValidators.stringToNumberWithMax,
-  taxID: fieldValidators.string,
   amountType: fieldValidators.string,
 });
 
 const sgstTaxDetailsSchema = z.object({
   amount: fieldValidators.stringToNumberWithMax,
-  taxID: fieldValidators.string,
   amountType: fieldValidators.string,
 });
 

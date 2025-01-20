@@ -15,8 +15,11 @@ export async function generatePdfService(req: NextRequest) {
       compress: true,
     });
 
-    // Add a cursive font for signatures
-    doc.addFont("https://fonts.googleapis.com/css2?family=${details?.signature?.fontFamily}&display=swap", "DancingScript", "normal");
+    doc.addFileToVFS(
+      "DancingScript-Regular.ttf",
+      "YOUR_BASE64_FONT_DATA_HERE"
+    );
+    doc.addFont("DancingScript-Regular.ttf", "DancingScript", "normal");
 
     const PAGE_HEIGHT = doc.internal.pageSize.height;
     const MARGIN_BOTTOM = 20;
@@ -83,7 +86,7 @@ export async function generatePdfService(req: NextRequest) {
     }
 
     // Sender address
-    yPosition += 5;
+    yPosition += 0;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     addWrappedText(
@@ -97,7 +100,7 @@ export async function generatePdfService(req: NextRequest) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(17);
     doc.setTextColor(0, 0, 255);
-    doc.text(sender.name || "", 190, yPosition, { align: "right" });
+    doc.text(sender.name || "", 190, yPosition += 9, { align: "right" });
     doc.setTextColor(0);
 
     if (details.paymentInformation?.Gstin) {
@@ -109,7 +112,7 @@ export async function generatePdfService(req: NextRequest) {
     }
 
     // Bill to section
-    yPosition += 18;
+    yPosition += 12;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("Bill to:", 20, yPosition);
@@ -299,45 +302,47 @@ export async function generatePdfService(req: NextRequest) {
     checkAndAddNewPage();
     yPosition += 12;
     doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
     doc.text("Contact information:", 20, yPosition);
     yPosition += 8;
+    doc.setFont("helvetica","normal")
     doc.setFontSize(12);
     doc.text(sender.email || "", 20, yPosition);
     yPosition += 8;
     doc.text(sender.phone || "", 20, yPosition);
 
-    // Signature - Enhanced with proper font handling
-    if (details.signature?.data) {
-      const signatureY = yPosition - 20;
-      doc.setFont("helvetica", "bold");
-      doc.text("Signature:", 160, signatureY);
+  // Signature section - Updated with proper font handling
+  if (details.signature?.data) {
+    const signatureY = yPosition - 20;
+    doc.setFont("helvetica", "bold");
+    doc.text("Signature:", 160, signatureY);
 
-      if (isDataUrl(details.signature.data)) {
-        try {
-          const signatureWidth = 45;
-          const signatureHeight = 30;
-          doc.addImage(
-            details.signature.data,
-            "JPEG",
-            160,
-            signatureY + 3,
-            signatureWidth,
-            signatureHeight
-          );
-        } catch (e) {
-          console.error("Error adding signature:", e);
-          // Fallback to text signature with cursive font
-          doc.setFont("DancingScript", "normal");
-          doc.setFontSize(20);
-          doc.text(details.signature.data, 160, signatureY + 15);
-        }
-      } else {
-        // Use cursive font for text signatures
+    if (isDataUrl(details.signature.data)) {
+      try {
+        const signatureWidth = 45;
+        const signatureHeight = 30;
+        doc.addImage(
+          details.signature.data,
+          "JPEG",
+          160,
+          signatureY + 3,
+          signatureWidth,
+          signatureHeight
+        );
+      } catch (e) {
+        console.error("Error adding signature:", e);
+        // Fallback to text signature with properly loaded Dancing Script font
         doc.setFont("DancingScript", "normal");
         doc.setFontSize(20);
         doc.text(details.signature.data, 160, signatureY + 15);
       }
+    } else {
+      // Text signature with properly loaded Dancing Script font
+      doc.setFont("DancingScript", "normal");
+      doc.setFontSize(20);
+      doc.text(details.signature.data, 160, signatureY + 15);
     }
+  }
 
     // Generate PDF Buffer
     const pdfBuffer = Buffer.from(doc.output("arraybuffer"));

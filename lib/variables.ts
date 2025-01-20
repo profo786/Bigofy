@@ -153,17 +153,14 @@ export const FORM_BIGCIRCLE = {
     taxDetails: {
       amount: 0,
       amountType: "percentage",
-      taxID: "987654321",
     },
     cgsttaxDetails: {
       amount: 12.5,
       type: "percentage",
-      taxID: "987654321",
     },
     sgsttaxDetails: {
       amount: 12.5,
       type: "percentage",
-      taxID: "987654321",
     },
     discountDetails: {
       amount: 0,
@@ -245,17 +242,14 @@ export const FORM_PILOT = {
     taxDetails: {
       amount: 0,
       amountType: "percentage",
-      taxID: "987654321",
     },
     cgsttaxDetails: {
       amount: 12.5,
       type: "percentage",
-      taxID: "987654321",
     },
     sgsttaxDetails: {
       amount: 12.5,
       type: "percentage",
-      taxID: "987654321",
     },
     discountDetails: {
       amount: 0,
@@ -326,7 +320,6 @@ export const FORM_DEFAULT_VALUES = {
     taxDetails: {
       amount: 0,
       amountType: "amount",
-      taxID: "",
     },
     discountDetails: {
       amount: 0,
@@ -335,12 +328,10 @@ export const FORM_DEFAULT_VALUES = {
     cgsttaxDetails: {
       amount: 12.5,
       type: "percentage",
-      taxID: "987654321",
     },
     sgsttaxDetails: {
       amount: 12.5,
       type: "percentage",
-      taxID: "987654321",
     },
     shippingDetails: {
       cost: 0,
@@ -417,7 +408,6 @@ export const FORM_FILL_VALUES = {
       taxDetails: {
         amount: 15,
         amountType: "percentage",
-        taxID: "987654321",
       },
       discountDetails: {
         amount: 5,
@@ -497,7 +487,6 @@ export const FORM_FILL_VALUES = {
       taxDetails: {
         amount: 15,
         amountType: "percentage",
-        taxID: "987654321",
       },
       discountDetails: {
         amount: 5,
@@ -563,7 +552,6 @@ export const FORM_FILL_VALUES = {
       taxDetails: {
         amount: 15,
         amountType: "percentage",
-        taxID: "987654321",
       },
       discountDetails: {
         amount: 5,
